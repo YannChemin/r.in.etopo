@@ -1,0 +1,81 @@
+<h2 id="description">DESCRIPTION</h2>
+<p><em>r.in.etopo</em> downloads the NOAA ETOPO 2022 global relief model
+(land topography and ocean bathymetry, NOAA NCEI) for an area and
+imports it as a raster map. ETOPO 2022 merges GEBCO, multibeam surveys,
+Copernicus and other land models into seamless grids at 15, 30 and 60
+arc-seconds (about 450 m, 900 m and 1.8 km), with heights in metres
+above the EGM2008 geoid (negative below sea level).</p>
+<p>Only the cells of the area are transferred: the module reads index
+windows of the NCEI THREDDS server through OPeNDAP (no account needed).
+At 15 arc-seconds the grid is split in 15 x 15 degree tiles, and an area
+across tile edges is read from each tile and mosaicked.</p>
+<h3 id="resolution-and-layers">Resolution and layers</h3>
+<p><strong>resolution=auto</strong> (default) picks the coarsest grid
+whose cells are not larger than those of the current region.
+<strong>layer</strong> chooses between:</p>
+<table>
+<thead>
+<tr class="header">
+<th>Layer</th>
+<th>Content</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>surface</td>
+<td>Elevation of the surface: top of the ice sheets, land, sea
+floor</td>
+</tr>
+<tr class="even">
+<td>bed</td>
+<td>Elevation of the bedrock below the ice sheets (equal to
+<em>surface</em> outside them)</td>
+</tr>
+<tr class="odd">
+<td>geoid</td>
+<td>EGM2008 geoid height above the WGS84 ellipsoid</td>
+</tr>
+</tbody>
+</table>
+<p>At 15 arc-seconds the <em>bed</em> tiles exist only where ice makes
+the bed differ from the surface (62 of 288 tiles); elsewhere the module
+reads the <em>surface</em> tile, which is the bed there.</p>
+<h3 id="import">Import</h3>
+<p>By default the window is imported on the current region (extent and
+resolution) with <em>r.import</em>, as <em>r.in.dem</em> does. With
+<strong>-n</strong>, it is imported at the native ETOPO resolution over
+the area. <strong>-b</strong> keeps the bathymetry only (cells above 0 m
+set to null). The map gets the <em>etopo2</em> colour table, its units
+and vertical datum.</p>
+<h2 id="notes">NOTES</h2>
+<p>The area defaults to the current region plus one grid cell. Areas
+crossing the antimeridian are not supported; import the two sides
+separately. <strong>max_cells</strong> (200 million by default) stops a
+request that would be very large (the whole world at 15 arc-seconds is
+3.7 billion cells): use a coarser resolution or a smaller area.
+Downloaded windows are kept in <strong>cache_dir</strong> as GeoTIFF and
+reused.</p>
+<p>ETOPO 2022 is a relief model, not a navigation chart: in shallow
+coastal waters its 450 m cells smooth channels, reefs and dredged
+areas.</p>
+<h2 id="examples">EXAMPLES</h2>
+<p>Bathymetry of the southern Arabian Gulf at native 15 arc-second
+resolution, land removed:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">r.in.etopo</span> <span class="at">-n</span> <span class="at">-b</span> output=bathy15 resolution=15s area=26.8,54.0,24.8,57.0</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">r.univar</span> bathy15</span></code></pre></div>
+<p>Relief on the current region at the matching resolution:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">g.region</span> n=2965000 s=2745000 w=200000 e=500000 res=1000</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">r.in.etopo</span> output=relief</span></code></pre></div>
+<h2 id="see-also">SEE ALSO</h2>
+<p><em><a
+href="https://grass.osgeo.org/grass-stable/manuals/r.import.html">r.import</a>,
+<a href="r.in.dem.md">r.in.dem</a>, <a
+href="https://grass.osgeo.org/grass-stable/manuals/addons/r.in.srtm.region.html">r.in.srtm.region</a>,
+<a href="t.in.hycom.md">t.in.hycom</a></em></p>
+<h2 id="references">REFERENCES</h2>
+<ul>
+<li>NOAA National Centers for Environmental Information (2022). ETOPO
+2022 15 Arc-Second Global Relief Model. doi:10.25921/fd45-gt74.</li>
+</ul>
+<h2 id="authors">AUTHORS</h2>
+<p>Yann Chemin</p>
